@@ -7,7 +7,7 @@ license = "MIT"
 repository = "https://github.com/PrajaNova/avm-plugin-node"
 
 [dependencies]
-avm-plugin-api = { git = "https://github.com/PrajaNova/avm", branch = "feat/plugin-protocol-native-providers", package = "avm-plugin-api" }
+avm-plugin-api = { git = "https://github.com/PrajaNova/avm" }
 anyhow = "1.0"
 serde = { version = "1.0", features = ["derive"] }
 serde_json = "1.0"
