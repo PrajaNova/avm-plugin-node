@@ -20,7 +20,7 @@ dependencies = [
 
 [[package]]
 name = "avm-plugin-node"
-version = "0.2.8"
+version = "0.1.2"
 dependencies = [
  "anyhow",
  "avm-plugin-api",
