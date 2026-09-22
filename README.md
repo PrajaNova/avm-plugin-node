@@ -76,7 +76,7 @@ plugin add node` downloads. See
 [`avm-marketplace`](https://github.com/PrajaNova/avm-marketplace) for the
 registry entry that points at this repo, and the main
 [avm repo](https://github.com/PrajaNova/avm)'s
-`docs/migration/PLUGIN_PROTOCOL.md` for the full wire protocol this
+`docs/plugins/CREATING_A_PLUGIN.md` for the full wire protocol this
 executable speaks (`manifest`, `versions`, `is-installed`,
 `installed-versions`, `executable-path`, `env-vars`, `install`,
 `uninstall`).
