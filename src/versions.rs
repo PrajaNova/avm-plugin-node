@@ -102,7 +102,10 @@ impl From<NodeRelease> for ToolVersion {
 
 fn filter_node_versions(versions: Vec<NodeRelease>, query: &ToolVersionQuery) -> Vec<NodeRelease> {
     match query {
-        ToolVersionQuery::Recent => versions.into_iter().take(10).collect(),
+        // The interactive picker (avm-cli) pages 10 at a time with real
+        // up/down scrolling — capping the source list at exactly one page
+        // left nothing to scroll into. 30 gives ~3 pages of real releases.
+        ToolVersionQuery::Recent => versions.into_iter().take(30).collect(),
         ToolVersionQuery::Latest => versions.into_iter().take(1).collect(),
         ToolVersionQuery::Major(major) => versions
             .into_iter()
