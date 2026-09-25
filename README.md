@@ -21,6 +21,9 @@ building/publishing this repo itself.
   hardcoded/stale list.
 - **Version install & switching** — per-project (local) and machine-wide
   (global) pins, same model as nvm/fnm/asdf, resolved through avm's config.
+- **Verified downloads** — every archive is checked against the release's
+  `SHASUMS256.txt` (from the same mirror) before extraction; a mismatch or
+  missing checksum file aborts the install (`AVM_ALLOW_UNVERIFIED=1` skips it).
 - **`package.json` script aliases** — if a project has a `package.json`
   with a `scripts` block, avm exposes each script as a runnable alias
   (`avm <script-name>`) automatically, with the right package manager
