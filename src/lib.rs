@@ -3,6 +3,7 @@ mod install;
 mod versions;
 
 use avm_plugin_api::{tool_dir, ToolProvider, ToolVersion, ToolVersionQuery};
+use std::collections::HashMap;
 use std::path::PathBuf;
 
 pub use aliases::aliases_from_package_json;
@@ -39,6 +40,18 @@ impl ToolProvider for NodeProvider {
 
     fn executable_path(&self, version: &str) -> anyhow::Result<Option<PathBuf>> {
         self.bin_path_for(version, NODE_BIN)
+    }
+
+    /// Windows: a user or global npmrc prefix (nvm-windows, CI images'
+    /// `C:\npm\prefix`) outranks the builtin one set at install, so pin npm's
+    /// global prefix to this version for everything avm runs.
+    fn env_vars(&self, version: &str) -> anyhow::Result<HashMap<String, String>> {
+        let mut env = HashMap::new();
+        if cfg!(windows) {
+            let bin = tool_dir("node")?.join(version).join("bin");
+            env.insert("npm_config_prefix".to_string(), bin.display().to_string());
+        }
+        Ok(env)
     }
 
     fn install(&self, version: &str) -> anyhow::Result<()> {
