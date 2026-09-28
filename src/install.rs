@@ -12,13 +12,14 @@ pub fn install_node(version: &str) -> Result<()> {
     let platform = platform_name()?;
     let tools_root = tool_dir("node")?;
     let target = tools_root.join(version);
-    if target.join("bin").join("node").exists() {
+    if target.join("bin").join(crate::NODE_BIN).exists() {
         return Ok(());
     }
 
     // Download + extract inside tools_root: the half-done dirs never count as
     // installed (no `<version>/bin/node`), and the final rename stays on one fs.
-    let archive_name = format!("node-v{version}-{platform}.tar.gz");
+    let ext = if cfg!(windows) { "zip" } else { "tar.gz" };
+    let archive_name = format!("node-v{version}-{platform}.{ext}");
     let tmp_root = tools_root.join(format!(".tmp-{version}"));
     let archive_path = tmp_root.join(&archive_name);
     let extract_path = tmp_root.join(format!("node-v{version}-{platform}"));
@@ -34,13 +35,21 @@ pub fn install_node(version: &str) -> Result<()> {
     }
 
     let mut tar = Command::new("tar");
-    tar.arg("-xzf").arg(&archive_path).arg("-C").arg(&tmp_root);
+    // Windows 10+ ships bsdtar, which also reads zip.
+    tar.arg(if cfg!(windows) { "-xf" } else { "-xzf" }).arg(&archive_path).arg("-C").arg(&tmp_root);
     run_timed(tar, TAR_TIMEOUT_MS, "node archive extraction", "AVM_TAR_TIMEOUT")?;
 
     if target.exists() {
         fs::remove_dir_all(&target).context("failed to replace existing node install")?;
     }
-    fs::rename(&extract_path, &target).context("failed to move node install into place")?;
+    // The Windows zip has node.exe at its root (and npm installs global
+    // packages next to it), so it becomes `<version>\\bin` to keep one layout.
+    if cfg!(windows) {
+        fs::create_dir_all(&target).context("failed to create node install dir")?;
+        fs::rename(&extract_path, target.join("bin")).context("failed to move node install into place")?;
+    } else {
+        fs::rename(&extract_path, &target).context("failed to move node install into place")?;
+    }
     let _ = fs::remove_dir_all(&tmp_root);
     Ok(())
 }
@@ -89,6 +98,8 @@ fn platform_name() -> Result<&'static str> {
         ("macos", "x86_64") => Ok("darwin-x64"),
         ("linux", "aarch64") => Ok("linux-arm64"),
         ("linux", "x86_64") => Ok("linux-x64"),
+        ("windows", "aarch64") => Ok("win-arm64"),
+        ("windows", "x86_64") => Ok("win-x64"),
         (os, arch) => Err(anyhow!("unsupported Node.js platform: {os}-{arch}")),
     }
 }

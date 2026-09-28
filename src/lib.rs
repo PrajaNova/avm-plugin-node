@@ -7,6 +7,9 @@ use std::path::PathBuf;
 
 pub use aliases::aliases_from_package_json;
 
+/// `bin/node` (or `bin\\node.exe`) inside each installed version.
+pub(crate) const NODE_BIN: &str = if cfg!(windows) { "node.exe" } else { "node" };
+
 #[derive(Debug)]
 pub struct NodeProvider;
 
@@ -23,7 +26,7 @@ impl ToolProvider for NodeProvider {
     }
 
     fn is_installed(&self, version: &str) -> bool {
-        self.bin_path_for(version, "node").ok().flatten().is_some()
+        self.bin_path_for(version, NODE_BIN).ok().flatten().is_some()
     }
 
     fn installed_versions(&self) -> anyhow::Result<Vec<String>> {
@@ -35,7 +38,7 @@ impl ToolProvider for NodeProvider {
     }
 
     fn executable_path(&self, version: &str) -> anyhow::Result<Option<PathBuf>> {
-        self.bin_path_for(version, "node")
+        self.bin_path_for(version, NODE_BIN)
     }
 
     fn install(&self, version: &str) -> anyhow::Result<()> {
