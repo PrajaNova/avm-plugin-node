@@ -46,7 +46,14 @@ pub fn install_node(version: &str) -> Result<()> {
     // packages next to it), so it becomes `<version>\\bin` to keep one layout.
     if cfg!(windows) {
         fs::create_dir_all(&target).context("failed to create node install dir")?;
-        fs::rename(&extract_path, target.join("bin")).context("failed to move node install into place")?;
+        let bin = target.join("bin");
+        fs::rename(&extract_path, &bin).context("failed to move node install into place")?;
+        // Node for Windows points npm's global prefix at %APPDATA%\npm, shared
+        // by every version. Point it at this version's dir, as on Unix, so
+        // `npm i -g` lands where avm's shims look (and per-version pins hold).
+        let npmrc = bin.join("node_modules").join("npm").join("npmrc");
+        fs::write(&npmrc, format!("prefix={}\n", bin.display().to_string().replace('\\', "/")))
+            .context("failed to set npm's global prefix")?;
     } else {
         fs::rename(&extract_path, &target).context("failed to move node install into place")?;
     }
