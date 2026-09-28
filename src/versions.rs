@@ -12,7 +12,7 @@ struct IndexEntry {
 }
 
 pub fn available_versions(query: ToolVersionQuery) -> Result<Vec<ToolVersion>> {
-    let mirror = std::env::var("AVM_NODE_DIST_URL").unwrap_or_else(|_| "https://nodejs.org/dist".to_string());
+    let mirror = crate::install::mirror();
     let raw = avm_plugin_api::fetch(&format!("{}/index.json", mirror.trim_end_matches('/')), 20)?;
     let index: Vec<IndexEntry> = serde_json::from_slice(&raw).context("failed to parse Node.js version index")?;
     let versions = index.into_iter().map(to_tool_version).collect();
